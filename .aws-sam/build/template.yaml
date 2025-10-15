@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple calculator API using AWS Lambda and API Gateway
+Globals:
+  Function:
+    Timeout: 5
+    Runtime: python3.12
+    MemorySize: 128
+Resources:
+  CalculatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CalculatorFunction
+      CodeUri: CalculatorFunction
+      Handler: calculator.lambda_handler
+      Runtime: python3.12
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /calculate
+            Method: post
+    Metadata:
+      SamResourceId: CalculatorFunction
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL for calculator
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/calculate
