@@ -1,19 +1,27 @@
-# Use Docker CLI image as base
+# Use Docker CLI image as base (for Docker-in-Docker)
 FROM docker:24.0.2-cli
 
 # Install Python3, pip, bash, git, curl
 RUN apk add --no-cache python3 py3-pip bash git curl
 
+# Install AWS CLI (optional but recommended)
+RUN pip3 install awscli
+
 # Install AWS SAM CLI
 RUN pip3 install aws-sam-cli
 
-# Install project dependencies (pytest, boto3)
-RUN pip3 install pytest boto3
+# Set working directory inside container
+WORKDIR /app
 
-# Set working directory for Jenkins agent
-WORKDIR /home/jenkins/agent
+# Copy project files
+COPY app/ app/
+COPY tests/ tests/
+COPY requirements.txt .
 
-# Docker socket to allow building images inside container
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Mount Docker socket to allow building images inside container
 VOLUME ["/var/run/docker.sock"]
 
 # Default shell
