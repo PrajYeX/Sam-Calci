@@ -1,16 +1,18 @@
-# Use Docker CLI image as base (for Docker-in-Docker)
-FROM docker:24.0.2-cli
+# Use Python 3.12 slim as base
+FROM python:3.12-slim
 
-# Install Python3, pip, bash, git, curl
-RUN apk add --no-cache python3 py3-pip bash git curl
-
-# Install AWS CLI (optional but recommended)
-RUN pip3 install awscli
+# Install bash, git, curl, Docker CLI
+RUN apt-get update && \
+    apt-get install -y bash git curl docker.io && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install AWS SAM CLI
-RUN pip3 install aws-sam-cli
+RUN pip install aws-sam-cli
 
-# Set working directory inside container
+# Install project dependencies
+RUN pip install pytest boto3
+
+# Set working directory
 WORKDIR /app
 
 # Copy project files
@@ -19,9 +21,9 @@ COPY tests/ tests/
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Mount Docker socket to allow building images inside container
+# Docker socket to allow building images inside container
 VOLUME ["/var/run/docker.sock"]
 
 # Default shell
