@@ -1,33 +1,20 @@
-# Use official Python slim image
-FROM python:3.12-slim
+# Use Docker CLI image as base
+FROM docker:24.0.2-cli
 
-# Set working directory
-WORKDIR /app
-
-# Copy application files
-COPY app/ app/
-COPY tests/ tests/
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install curl and unzip (needed for SAM CLI)
-RUN apt-get update && apt-get install -y \
-    curl unzip git && \
-    rm -rf /var/lib/apt/lists/*
+# Install Python3, pip, bash, git, curl
+RUN apk add --no-cache python3 py3-pip bash git curl
 
 # Install AWS SAM CLI
-RUN curl -Lo sam-installation.sh https://raw.githubusercontent.com/aws/aws-sam-cli/main/packaging/docker/installers/install.sh && \
-    chmod +x sam-installation.sh && \
-    ./sam-installation.sh && \
-    rm sam-installation.sh
+RUN pip3 install aws-sam-cli
 
-# Verify SAM installation
-RUN sam --version
+# Install project dependencies (pytest, boto3)
+RUN pip3 install pytest boto3
 
-# Set environment variable (optional)
-ENV PYTHONPATH=/app
+# Set working directory for Jenkins agent
+WORKDIR /home/jenkins/agent
 
-# Default command
-CMD ["bash"]
+# Docker socket to allow building images inside container
+VOLUME ["/var/run/docker.sock"]
+
+# Default shell
+CMD ["sh"]
